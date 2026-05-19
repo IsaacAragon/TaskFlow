@@ -8,6 +8,6 @@ object ListScreen {
 }
 
 @Serializable
-object NewTaskScreen {
+object TaskScreen {
 
 }
