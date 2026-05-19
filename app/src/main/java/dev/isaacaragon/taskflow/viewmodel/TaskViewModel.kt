@@ -4,6 +4,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import dev.isaacaragon.taskflow.model.Priority
+import dev.isaacaragon.taskflow.model.Status
 import dev.isaacaragon.taskflow.model.Task
 import dev.isaacaragon.taskflow.repository.TaskRepository
 
@@ -20,11 +22,20 @@ class TaskViewModel : ViewModel() {
     var title by mutableStateOf("")
         private set
 
+    var priority by mutableStateOf(Priority.MEDIUM)
+        private set
+
+    var status by mutableStateOf(Status.TODO)
+        private set
+
     var completed by mutableStateOf(false)
         private set
 
+    var isEditing by mutableStateOf(false)
+        private set
+
     init {
-        loadTask()
+        loadTasks()
     }
 
     fun onIdChange(newId: String) {
@@ -35,63 +46,89 @@ class TaskViewModel : ViewModel() {
         title = newTitle
     }
 
+    fun onPriorityChange(newPriority: Priority) {
+        priority = newPriority
+    }
+
+    fun onStatusChange(newStatus: Status) {
+        status = newStatus
+    }
+
     fun onCompletedChange(newCompleted: Boolean) {
         completed = newCompleted
     }
 
-    private fun loadTask() {
+    private fun loadTasks() {
         tasks = repository.getTasks()
+            .sortedByDescending { it.priority } // HIGH first
+            .toList()
     }
 
     fun loadTask(taskId: Int?) {
-
         if (taskId == null) {
             clearForm()
+            isEditing = false
             return
         }
 
         val task = repository.getTaskId(taskId)
-
         task?.let {
-
             id = it.id.toString()
             title = it.title
+            priority = it.priority
+            status = it.status
             completed = it.completed
+            isEditing = true
         }
     }
 
-    fun addTask(task: Task) {
+    fun addTask() {
+        if (id.isNotEmpty() && title.isNotEmpty()) {
+            val task = Task(
+                id = id.toInt(),
+                title = title,
+                priority = priority,
+                status = status,
+                completed = completed
+            )
+            repository.addTask(task)
+            loadTasks()
+            clearForm()
+        }
+    }
 
-        repository.addTask(task)
-
-        loadTask()
-
-        clearForm()
+    fun updateTask() {
+        if (id.isNotEmpty() && title.isNotEmpty()) {
+            val task = Task(
+                id = id.toInt(),
+                title = title,
+                priority = priority,
+                status = status,
+                completed = completed
+            )
+            repository.updateTask(task)
+            loadTasks()
+            clearForm()
+            isEditing = false
+        }
     }
 
     fun removeTask(task: Task) {
-
         repository.removeTask(task)
-
-        loadTask()
+        loadTasks()
     }
 
     fun toggleTask(task: Task) {
-
         repository.toggleTask(task)
-
-        loadTask()
-    }
-
-    fun getTaskId(id: Int): Task? {
-
-        return repository.getTaskId(id)
+        loadTasks()
     }
 
     fun clearForm() {
-
         id = ""
         title = ""
+        priority = Priority.MEDIUM
+        status = Status.TODO
         completed = false
+        isEditing = false
     }
 }
