@@ -1,17 +1,13 @@
 package dev.isaacaragon.taskflow.ui.screen
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import dev.isaacaragon.taskflow.model.Priority
-import dev.isaacaragon.taskflow.model.Status
+import dev.isaacaragon.taskflow.model.Prioridad
+import dev.isaacaragon.taskflow.model.Estado
 import dev.isaacaragon.taskflow.viewmodel.TaskViewModel
 
 @Composable
@@ -22,25 +18,14 @@ fun TaskScreen(
     AlertDialog(
         onDismissRequest = { cerrarDialogo() },
         title = {
-            Text(if (viewModel.isEditing) "Editar tarea" else "Nueva tarea")
+            Text(if (viewModel.estaEditando) "Editar tarea" else "Nueva tarea")
         },
         text = {
             Column {
-                // Campo ID
-                OutlinedTextField(
-                    value = viewModel.id,
-                    onValueChange = { viewModel.onIdChange(it) },
-                    label = { Text("ID") },
-                    modifier = Modifier.fillMaxWidth(),
-                    enabled = !viewModel.isEditing // Disable ID editing if already exists
-                )
-
-                Spacer(modifier = Modifier.height(12.dp))
-
                 // Campo título
                 OutlinedTextField(
-                    value = viewModel.title,
-                    onValueChange = { viewModel.onTitleChange(it) },
+                    value = viewModel.titulo,
+                    onValueChange = { viewModel.alCambiarTitulo(it) },
                     label = { Text("Título") },
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -48,28 +33,28 @@ fun TaskScreen(
                 Spacer(modifier = Modifier.height(12.dp))
 
                 // Selector de Prioridad
-                PrioritySelector(
-                    selectedPriority = viewModel.priority,
-                    onPrioritySelected = { viewModel.onPriorityChange(it) }
+                SelectorPrioridad(
+                    prioridadSeleccionada = viewModel.prioridad,
+                    alSeleccionarPrioridad = { viewModel.alCambiarPrioridad(it) }
                 )
 
                 Spacer(modifier = Modifier.height(12.dp))
 
                 // Selector de Estado
-                StatusSelector(
-                    selectedStatus = viewModel.status,
-                    onStatusSelected = { viewModel.onStatusChange(it) }
+                SelectorEstado(
+                    estadoSeleccionado = viewModel.estado,
+                    alSeleccionarEstado = { viewModel.alCambiarEstado(it) }
                 )
             }
         },
         confirmButton = {
             Button(
                 onClick = {
-                    if (viewModel.id.isNotEmpty() && viewModel.title.isNotEmpty()) {
-                        if (viewModel.isEditing) {
-                            viewModel.updateTask()
+                    if (viewModel.titulo.isNotEmpty()) {
+                        if (viewModel.estaEditando) {
+                            viewModel.actualizarTarea()
                         } else {
-                            viewModel.addTask()
+                            viewModel.agregarTarea()
                         }
                         cerrarDialogo()
                     }
@@ -88,34 +73,34 @@ fun TaskScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PrioritySelector(
-    selectedPriority: Priority,
-    onPrioritySelected: (Priority) -> Unit
+fun SelectorPrioridad(
+    prioridadSeleccionada: Prioridad,
+    alSeleccionarPrioridad: (Prioridad) -> Unit
 ) {
-    var expanded by remember { mutableStateOf(false) }
+    var expandido by remember { mutableStateOf(false) }
 
     ExposedDropdownMenuBox(
-        expanded = expanded,
-        onExpandedChange = { expanded = !expanded }
+        expanded = expandido,
+        onExpandedChange = { expandido = !expandido }
     ) {
         OutlinedTextField(
-            value = selectedPriority.name,
+            value = prioridadSeleccionada.name,
             onValueChange = {},
             readOnly = true,
             label = { Text("Prioridad") },
-            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandido) },
             modifier = Modifier.menuAnchor().fillMaxWidth()
         )
         ExposedDropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false }
+            expanded = expandido,
+            onDismissRequest = { expandido = false }
         ) {
-            Priority.values().forEach { priority ->
+            Prioridad.entries.forEach { prioridad ->
                 DropdownMenuItem(
-                    text = { Text(priority.name) },
+                    text = { Text(prioridad.name) },
                     onClick = {
-                        onPrioritySelected(priority)
-                        expanded = false
+                        alSeleccionarPrioridad(prioridad)
+                        expandido = false
                     }
                 )
             }
@@ -125,34 +110,34 @@ fun PrioritySelector(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun StatusSelector(
-    selectedStatus: Status,
-    onStatusSelected: (Status) -> Unit
+fun SelectorEstado(
+    estadoSeleccionado: Estado,
+    alSeleccionarEstado: (Estado) -> Unit
 ) {
-    var expanded by remember { mutableStateOf(false) }
+    var expandido by remember { mutableStateOf(false) }
 
     ExposedDropdownMenuBox(
-        expanded = expanded,
-        onExpandedChange = { expanded = !expanded }
+        expanded = expandido,
+        onExpandedChange = { expandido = !expandido }
     ) {
         OutlinedTextField(
-            value = selectedStatus.name,
+            value = estadoSeleccionado.name,
             onValueChange = {},
             readOnly = true,
             label = { Text("Estado") },
-            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandido) },
             modifier = Modifier.menuAnchor().fillMaxWidth()
         )
         ExposedDropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false }
+            expanded = expandido,
+            onDismissRequest = { expandido = false }
         ) {
-            Status.values().forEach { status ->
+            Estado.entries.forEach { estado ->
                 DropdownMenuItem(
-                    text = { Text(status.name) },
+                    text = { Text(estado.name) },
                     onClick = {
-                        onStatusSelected(status)
-                        expanded = false
+                        alSeleccionarEstado(estado)
+                        expandido = false
                     }
                 )
             }

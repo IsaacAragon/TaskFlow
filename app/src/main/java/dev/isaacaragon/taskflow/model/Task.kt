@@ -1,17 +1,17 @@
 package dev.isaacaragon.taskflow.model
 
-enum class Priority {
-    LOW, MEDIUM, HIGH
+enum class Prioridad {
+    BAJO, MEDIO, ALTO
 }
 
-enum class Status {
-    TODO, IN_PROGRESS, DONE
+enum class Estado {
+    PENDIENTE, EN_PROGRESO, COMPLETADA
 }
 
-data class Task(
+data class Tarea(
     val id: Int,
-    val title: String,
-    val priority: Priority = Priority.MEDIUM,
-    val status: Status = Status.TODO,
-    val completed: Boolean = false
+    val titulo: String,
+    val prioridad: Prioridad = Prioridad.MEDIO,
+    val estado: Estado = Estado.PENDIENTE,
+    val completada: Boolean = false
 )

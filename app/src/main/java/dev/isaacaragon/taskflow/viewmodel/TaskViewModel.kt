@@ -4,131 +4,142 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
-import dev.isaacaragon.taskflow.model.Priority
-import dev.isaacaragon.taskflow.model.Status
-import dev.isaacaragon.taskflow.model.Task
-import dev.isaacaragon.taskflow.repository.TaskRepository
+import dev.isaacaragon.taskflow.model.Prioridad
+import dev.isaacaragon.taskflow.model.Estado
+import dev.isaacaragon.taskflow.model.Tarea
+import dev.isaacaragon.taskflow.repository.RepositorioTareas
 
 class TaskViewModel : ViewModel() {
 
-    private val repository = TaskRepository()
+    private val repositorio = RepositorioTareas()
 
-    var tasks by mutableStateOf(listOf<Task>())
+    var tareas by mutableStateOf(listOf<Tarea>())
         private set
 
     var id by mutableStateOf("")
         private set
 
-    var title by mutableStateOf("")
+    var titulo by mutableStateOf("")
         private set
 
-    var priority by mutableStateOf(Priority.MEDIUM)
+    var prioridad by mutableStateOf(Prioridad.MEDIO)
         private set
 
-    var status by mutableStateOf(Status.TODO)
+    var estado by mutableStateOf(Estado.PENDIENTE)
         private set
 
-    var completed by mutableStateOf(false)
+    var completada by mutableStateOf(false)
         private set
 
-    var isEditing by mutableStateOf(false)
+    var estaEditando by mutableStateOf(false)
         private set
 
     init {
-        loadTasks()
+        cargarTareas()
     }
 
-    fun onIdChange(newId: String) {
-        id = newId
+    fun alCambiarId(nuevoId: String) {
+        id = nuevoId
     }
 
-    fun onTitleChange(newTitle: String) {
-        title = newTitle
+    fun alCambiarTitulo(nuevoTitulo: String) {
+        titulo = nuevoTitulo
     }
 
-    fun onPriorityChange(newPriority: Priority) {
-        priority = newPriority
+    fun alCambiarPrioridad(nuevaPrioridad: Prioridad) {
+        prioridad = nuevaPrioridad
     }
 
-    fun onStatusChange(newStatus: Status) {
-        status = newStatus
+    fun alCambiarEstado(nuevoEstado: Estado) {
+        estado = nuevoEstado
+        if (nuevoEstado == Estado.COMPLETADA) {
+            completada = true
+        } else if (completada) {
+            completada = false
+        }
     }
 
-    fun onCompletedChange(newCompleted: Boolean) {
-        completed = newCompleted
+    fun alCambiarCompletada(nuevoCompletada: Boolean) {
+        completada = nuevoCompletada
+        if (nuevoCompletada) {
+            estado = Estado.COMPLETADA
+        } else if (estado == Estado.COMPLETADA) {
+            estado = Estado.PENDIENTE
+        }
     }
 
-    private fun loadTasks() {
-        tasks = repository.getTasks()
-            .sortedByDescending { it.priority } // HIGH first
+    private fun cargarTareas() {
+        tareas = repositorio.obtenerTareas()
+            .sortedByDescending { it.prioridad }
             .toList()
     }
 
-    fun loadTask(taskId: Int?) {
-        if (taskId == null) {
-            clearForm()
-            isEditing = false
+    fun cargarTarea(idTarea: Int?) {
+        if (idTarea == null) {
+            limpiarFormulario()
+            estaEditando = false
             return
         }
 
-        val task = repository.getTaskId(taskId)
-        task?.let {
+        val tarea = repositorio.obtenerTareaPorId(idTarea)
+        tarea?.let {
             id = it.id.toString()
-            title = it.title
-            priority = it.priority
-            status = it.status
-            completed = it.completed
-            isEditing = true
+            titulo = it.titulo
+            prioridad = it.prioridad
+            estado = it.estado
+            completada = it.completada
+            estaEditando = true
         }
     }
 
-    fun addTask() {
-        if (id.isNotEmpty() && title.isNotEmpty()) {
-            val task = Task(
-                id = id.toInt(),
-                title = title,
-                priority = priority,
-                status = status,
-                completed = completed
+    fun agregarTarea() {
+        if (titulo.isNotEmpty()) {
+            val siguienteId = (tareas.maxOfOrNull { it.id } ?: 0) + 1
+            val tarea = Tarea(
+                id = siguienteId,
+                titulo = titulo,
+                prioridad = prioridad,
+                estado = estado,
+                completada = completada
             )
-            repository.addTask(task)
-            loadTasks()
-            clearForm()
+            repositorio.agregarTarea(tarea)
+            cargarTareas()
+            limpiarFormulario()
         }
     }
 
-    fun updateTask() {
-        if (id.isNotEmpty() && title.isNotEmpty()) {
-            val task = Task(
+    fun actualizarTarea() {
+        if (id.isNotEmpty() && titulo.isNotEmpty()) {
+            val tarea = Tarea(
                 id = id.toInt(),
-                title = title,
-                priority = priority,
-                status = status,
-                completed = completed
+                titulo = titulo,
+                prioridad = prioridad,
+                estado = estado,
+                completada = completada
             )
-            repository.updateTask(task)
-            loadTasks()
-            clearForm()
-            isEditing = false
+            repositorio.actualizarTarea(tarea)
+            cargarTareas()
+            limpiarFormulario()
+            estaEditando = false
         }
     }
 
-    fun removeTask(task: Task) {
-        repository.removeTask(task)
-        loadTasks()
+    fun eliminarTarea(tarea: Tarea) {
+        repositorio.eliminarTarea(tarea)
+        cargarTareas()
     }
 
-    fun toggleTask(task: Task) {
-        repository.toggleTask(task)
-        loadTasks()
+    fun alternarTarea(tarea: Tarea) {
+        repositorio.alternarTarea(tarea)
+        cargarTareas()
     }
 
-    fun clearForm() {
+    fun limpiarFormulario() {
         id = ""
-        title = ""
-        priority = Priority.MEDIUM
-        status = Status.TODO
-        completed = false
-        isEditing = false
+        titulo = ""
+        prioridad = Prioridad.MEDIO
+        estado = Estado.PENDIENTE
+        completada = false
+        estaEditando = false
     }
 }

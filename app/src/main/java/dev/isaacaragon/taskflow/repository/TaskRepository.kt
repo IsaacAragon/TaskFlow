@@ -1,37 +1,42 @@
 package dev.isaacaragon.taskflow.repository
 
-import dev.isaacaragon.taskflow.model.Task
-import dev.isaacaragon.taskflow.model.Priority
-import dev.isaacaragon.taskflow.model.Status
+import dev.isaacaragon.taskflow.model.Tarea
+import dev.isaacaragon.taskflow.model.Prioridad
+import dev.isaacaragon.taskflow.model.Estado
 
-class TaskRepository {
-    private val tasks = mutableListOf<Task>(
-        Task(1, "Task 1", Priority.LOW, Status.TODO, false),
-        Task(2, "Task 2", Priority.MEDIUM, Status.DONE, true),
-        Task(3, "Task 3", Priority.HIGH, Status.IN_PROGRESS, false),
-        Task(4, "Task 4", Priority.LOW, Status.DONE, true),
-        Task(5, "Task 5", Priority.MEDIUM, Status.TODO, false)
+class RepositorioTareas {
+    private val tareas = mutableListOf<Tarea>(
+        Tarea(1, "Tarea 1", Prioridad.BAJO, Estado.PENDIENTE, false),
+        Tarea(2, "Tarea 2", Prioridad.MEDIO, Estado.COMPLETADA, true),
+        Tarea(3, "Tarea 3", Prioridad.ALTO, Estado.EN_PROGRESO, false),
+        Tarea(4, "Tarea 4", Prioridad.BAJO, Estado.COMPLETADA, true),
+        Tarea(5, "Tarea 5", Prioridad.MEDIO, Estado.PENDIENTE, false)
     )
 
-    fun getTasks(): List<Task>  = tasks
+    fun obtenerTareas(): List<Tarea>  = tareas
 
-    fun addTask(task: Task) = tasks.add(task)
+    fun agregarTarea(tarea: Tarea) = tareas.add(tarea)
 
-    fun getTaskId(id: Int): Task? = tasks.find { it.id == id }
+    fun obtenerTareaPorId(id: Int): Tarea? = tareas.find { it.id == id }
 
-    fun removeTask(task: Task) = tasks.remove(task)
+    fun eliminarTarea(tarea: Tarea) = tareas.remove(tarea)
 
-    fun updateTask(updatedTask: Task) {
-        val index = tasks.indexOfFirst { it.id == updatedTask.id }
-        if (index != -1) {
-            tasks[index] = updatedTask
+    fun actualizarTarea(tareaActualizada: Tarea) {
+        val indice = tareas.indexOfFirst { it.id == tareaActualizada.id }
+        if (indice != -1) {
+            tareas[indice] = tareaActualizada
         }
     }
 
-    fun toggleTask(task: Task) {
-        val index = tasks.indexOf(task)
-        if (index != -1) {
-            tasks[index] = task.copy(completed = !task.completed)
+    fun alternarTarea(tarea: Tarea) {
+        val indice = tareas.indexOf(tarea)
+        if (indice != -1) {
+            val nuevoValorCompletada = !tarea.completada
+            val nuevoEstado = if (nuevoValorCompletada) Estado.COMPLETADA else Estado.PENDIENTE
+            tareas[indice] = tarea.copy(
+                completada = nuevoValorCompletada,
+                estado = nuevoEstado
+            )
         }
     }
 }
