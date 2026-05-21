@@ -5,6 +5,8 @@ import dev.isaacaragon.taskflow.model.Prioridad
 import dev.isaacaragon.taskflow.model.Estado
 
 class RepositorioTareas {
+
+    //"ALMACENAMIENTO TEMPORAL
     private val tareas = mutableListOf<Tarea>(
         Tarea(1, "Tarea Analisis", Prioridad.BAJO, Estado.PENDIENTE, false),
         Tarea(2, "Tarea Base de Datos", Prioridad.MEDIO, Estado.COMPLETADA, true),
@@ -31,8 +33,14 @@ class RepositorioTareas {
     fun alternarTarea(tarea: Tarea) {
         val indice = tareas.indexOf(tarea)
         if (indice != -1) {
+            // 1. Calculamos el nuevo valor (si estaba true, pasa a false y viceversa)
             val nuevoValorCompletada = !tarea.completada
+
+            // 2. LÓGICA AUTOMÁTICA: Si se marca como completada, el estado cambia a COMPLETADA.
+            // Si se desmarca, vuelve a PENDIENTE.
             val nuevoEstado = if (nuevoValorCompletada) Estado.COMPLETADA else Estado.PENDIENTE
+
+            // 3. Actualizamos la lista con la copia de la tarea modificada
             tareas[indice] = tarea.copy(
                 completada = nuevoValorCompletada,
                 estado = nuevoEstado
